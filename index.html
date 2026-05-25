@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DECENT HAIR SALOON - Hindaun City</title>
+  <!-- Tailwind + Font Awesome + Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #faf7f2; }
+    .slot-card { transition: all 0.2s ease; }
+    .slot-card:hover { transform: scale(0.98); }
+    .gallery-img { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .gallery-img:hover { transform: scale(1.02); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+    .admin-card { background: white; border-radius: 1.2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #b87333; border-radius: 10px; }
+  </style>
+</head>
+<body class="antialiased">
+
+  <div id="app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4"></div>
+
+  <script>
+    // ----------------------------- STORAGE KEYS -------------------------
+    const STORAGE = {
+      bookings: 'decent_salon_bookings',
+      services: 'decent_salon_services',
+      staff: 'decent_salon_staff',
+      earnings: 'decent_salon_earnings',
+      contacts: 'decent_salon_contacts',
+      settings: 'decent_salon_settings',
+      adminBlocks: 'decent_salon_admin_blocks'
+    };
+
+    // ----------------------------- DEFAULT DATA -------------------------
+    const defaultServices = [
+      { id: 's1', name: '💇‍♂️ हेयरकट (Haircut)', price: 350, image: 'https://picsum.photos/id/298/400/300' },
+      { id: 's2', name: '🧔 बियर्ड ट्रिम (Beard Trim)', price: 180, image: 'https://picsum.photos/id/255/400/300' },
+      { id: 's3', name: '🚿 शैम्पू + हेयर मसाज', price: 150, image: 'https://picsum.photos/id/175/400/300' },
+      { id: 's4', name: '🎨 हेयर कलर (Premium)', price: 1200, image: 'https://picsum.photos/id/20/400/300' },
+      { id: 's5', name: '✂️ किड्स हेयरकट', price: 250, image: 'https://picsum.photos/id/279/400/300' }
+    ];
+
+    // New gallery images provided by user (public Google Drive direct links)
+    const galleryImages = [
+      "https://drive.google.com/uc?export=view&id=1l625ZaOdGO4MSXUhWtGigXneioyPFe6-",
+      "https://drive.google.com/uc?export=view&id=1X4VycqnlmMax3t6AxbQxJX4cfk70ON54",
+      "https://drive.google.com/uc?export=view&id=1He6cbtH6ZeBn6VxirnfCcK1oScF08gX7",
+      "https://drive.google.com/uc?export=view&id=1siLbMOFqb3NAtyqahM-DnyiZjAVuUZ2l",
+      "https://drive.google.com/uc?export=view&id=1VeYW8VyosYdKxP5nNlabuV-DNOIQ6kyn",
+      "https://drive.google.com/uc?export=view&id=1xlHy8rxdGuPkHCPk180tv1hp_qYTveFW",
+      "https://drive.google.com/uc?export=view&id=1kvt6D4D3Eg6ADD2nD4DV1M_XdnVj2iXY",
+      "https://drive.google.com/uc?export=view&id=1fX1iep5dj6Q4iNs6zpfklPXnuzkVcgVc",
+      "https://drive.google.com/uc?export=view&id=1AWTwKORWaXjCLkOOlDoiofWEuhA4IdZz",
+      "https://drive.google.com/uc?export=view&id=1D-uvlfbge6vFWpr9oeQEiMd3OoMTxZ4j"
+    ];
+
+    const defaultStaff = [
+      { id: 'st1', name: 'Rohit Sharma', role: 'Master Barber', salaryType: 'monthly', salaryAmount: 18000, pendingSalary: 0, lastPaid: '2025-04-01' },
+      { id: 'st2', name: 'Vikram Singh', role: 'Senior Barber', salaryType: 'monthly', salaryAmount: 15000, pendingSalary: 0, lastPaid: '2025-04-01' },
+      { id: 'st3', name: 'Amit Kumar', role: 'Junior Barber', salaryType: 'daily', salaryAmount: 600, pendingSalary: 1200, lastPaid: '2025-04-02' },
+      { id: 'st4', name: 'Pooja Verma', role: 'Hair Colorist', salaryType: 'monthly', salaryAmount: 22000, pendingSalary: 0, lastPaid: '2025-04-01' },
+      { id: 'st5', name: 'Karan Mehta', role: 'Shampoo Expert', salaryType: 'daily', salaryAmount: 500, pendingSalary: 500, lastPaid: '2025-04-03' }
+    ];
+
+    const defaultContacts = {
+      phone: '+91 99888 77766',
+      email: 'decenthair@salon.com',
+      whatsapp: '919988877766',
+      instagram: 'decent_hair_salon',
+      telegram: 'decent_salon'
+    };
+
+    const defaultSettings = {
+      openTime: '10:00',
+      closeTime: '20:00',
+      slotDuration: 30,
+      breakStart: '13:00',
+      breakEnd: '14:00',
+      maxChairs: 4
+    };
+
+    // ----------------------------- GLOBAL STATE -------------------------
+    let bookings = [];
+    let services = [];
+    let staffList = [];
+    let earningsList = [];
+    let contacts = {};
+    let settings = {};
+    let adminBlocks = [];
+    let adminLoggedIn = false;
+    let currentPage = 'home';
+    let selectedBookingDate = new Date().toISOString().slice(0,10);
+
+    function loadData() {
+      bookings = JSON.parse(localStorage.getItem(STORAGE.bookings) || '[]');
+      services = JSON.parse(localStorage.getItem(STORAGE.services) || JSON.stringify(defaultServices));
+      staffList = JSON.parse(localStorage.getItem(STORAGE.staff) || JSON.stringify(defaultStaff));
+      earningsList = JSON.parse(localStorage.getItem(STORAGE.earnings) || '[]');
+      contacts = JSON.parse(localStorage.getItem(STORAGE.contacts) || JSON.stringify(defaultContacts));
+      settings = JSON.parse(localStorage.getItem(STORAGE.settings) || JSON.stringify(defaultSettings));
+      adminBlocks = JSON.parse(localStorage.getItem(STORAGE.adminBlocks) || '[]');
+    }
+
+    function saveAll() {
+      localStorage.setItem(STORAGE.bookings, JSON.stringify(bookings));
+      localStorage.setItem(STORAGE.services, JSON.stringify(services));
+      localStorage.setItem(STORAGE.staff, JSON.stringify(staffList));
+      localStorage.setItem(STORAGE.earnings, JSON.stringify(earningsList));
+      localStorage.setItem(STORAGE.contacts, JSON.stringify(contacts));
+      localStorage.setItem(STORAGE.settings, JSON.stringify(settings));
+      localStorage.setItem(STORAGE.adminBlocks, JSON.stringify(adminBlocks));
+    }
+
+    function getOccupiedChairsCount(date, timeSlot) {
+      const bookingCount = bookings.filter(b => b.date === date && b.timeSlot === timeSlot).length;
+      const blockCount = adminBlocks.filter(b => b.date === date && b.timeSlot === timeSlot).length;
+      return bookingCount + blockCount;
+    }
+
+    function timeToMinutes(t) { let [h,m] = t.split(':').map(Number); return h*60+m; }
+    function minutesToTime(mins) { let h = Math.floor(mins/60); let m = mins%60; return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; }
+
+    function generateTimeSlotsForDate(dateStr) {
+      const { openTime, closeTime, slotDuration, breakStart, breakEnd } = settings;
+      const maxChairs = settings.maxChairs || 4;
+      const slots = [];
+      let start = timeToMinutes(openTime);
+      const end = timeToMinutes(closeTime);
+      const breakStartMin = timeToMinutes(breakStart);
+      const breakEndMin = timeToMinutes(breakEnd);
+      const interval = slotDuration;
+      let current = start;
+      while (current < end) {
+        const slotStart = minutesToTime(current);
+        let slotEnd = minutesToTime(current + interval);
+        if (current + interval > end) slotEnd = closeTime;
+        const timeRange = `${slotStart} - ${slotEnd}`;
+        const isBreak = (current >= breakStartMin && current < breakEndMin);
+        if (!isBreak) {
+          const occupied = getOccupiedChairsCount(dateStr, timeRange);
+          const freeChairs = maxChairs - occupied;
+          slots.push({ timeRange, occupied, freeChairs, isAvailable: freeChairs > 0, maxChairs });
+        }
+        current += interval;
+      }
+      return slots;
+    }
+
+    function bookAppointment(date, timeSlot, customerName, mobile, serviceId) {
+      const maxChairs = settings.maxChairs || 4;
+      const occupied = getOccupiedChairsCount(date, timeSlot);
+      if (occupied >= maxChairs) return { success: false, msg: '❌ इस स्लॉट में सभी 4 कुर्सियाँ बुक हैं, कृपया दूसरा समय चुनें।' };
+      const mobileRegex = /^[0-9]{10}$/;
+      if (!mobileRegex.test(mobile)) return { success: false, msg: '📱 मोबाइल नंबर 10 अंकों का होना चाहिए।' };
+      if (!customerName.trim()) return { success: false, msg: 'कृपया पूरा नाम लिखें।' };
+      const selectedService = services.find(s => s.id === serviceId);
+      if (!selectedService) return { success: false, msg: 'सेवा चुनें' };
+      const newBooking = {
+        id: Date.now() + Math.random()*10000,
+        date, timeSlot, customerName: customerName.trim(), mobile,
+        serviceId, serviceName: selectedService.name, price: selectedService.price,
+        createdAt: new Date().toISOString()
+      };
+      bookings.push(newBooking);
+      saveAll();
+      return { success: true, msg: `✅ बुकिंग कन्फर्म! ${customerName}, ${timeSlot} पर ${selectedService.name}।` };
+    }
+
+    function cancelBooking(bookingId) {
+      bookings = bookings.filter(b => b.id != bookingId);
+      saveAll();
+    }
+
+    function adminOccupySlot(date, timeSlot) {
+      const maxChairs = settings.maxChairs || 4;
+      const occupied = getOccupiedChairsCount(date, timeSlot);
+      if (occupied >= maxChairs) return false;
+      adminBlocks.push({ id: Date.now(), date, timeSlot, reason: 'Admin Occupied' });
+      saveAll();
+      return true;
+    }
+    function adminFreeSlot(date, timeSlot) {
+      const existing = adminBlocks.findIndex(b => b.date === date && b.timeSlot === timeSlot);
+      if (existing !== -1) { adminBlocks.splice(existing,1); saveAll(); return true; }
+      return false;
+    }
+
+    // Helper: Back button (only if not home)
+    function getBackButtonHTML() {
+      if (currentPage === 'home') return '';
+      return `<div class="mb-4 flex items-center gap-3 sticky top-2 z-10 bg-white/80 backdrop-blur p-2 rounded-full shadow-sm w-fit">
+        <button id="globalBackBtn" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-4 py-2 rounded-full flex items-center gap-2 font-medium"><i class="fas fa-arrow-left"></i> होमपेज पर जाएं</button>
+      </div>`;
+    }
+
+    function attachGlobalBackEvent() {
+      const btn = document.getElementById('globalBackBtn');
+      if (btn) {
+        btn.addEventListener('click', () => {
+          currentPage = 'home';
+          adminLoggedIn = false;
+          render();
+        });
+      }
+    }
+
+    // ----------------------------- RENDER ENGINE -------------------------
+    const appDiv = document.getElementById('app');
+
+    function render() {
+      if (!appDiv) return;
+      if (currentPage === 'admin' && !adminLoggedIn) {
+        renderAdminLogin();
+        return;
+      }
+      if (currentPage === 'admin' && adminLoggedIn) {
+        renderAdminPanel();
+        return;
+      }
+      const backHtml = getBackButtonHTML();
+      let content = '';
+      if (currentPage === 'home') content = renderHomeContent();
+      else if (currentPage === 'pricelist') content = renderPriceListContent();
+      else if (currentPage === 'booking') content = renderBookingContent();
+      else if (currentPage === 'mybookings') content = renderMyBookingsContent();
+      else if (currentPage === 'contact') content = renderContactContent();
+      else content = renderHomeContent();
+      appDiv.innerHTML = backHtml + content;
+      attachGlobalBackEvent();
+      attachPageSpecificEvents();
+    }
+
+    function attachPageSpecificEvents() {
+      if (currentPage === 'home') {
+        document.querySelectorAll('[data-nav]').forEach(el => {
+          el.addEventListener('click', (e) => { currentPage = el.getAttribute('data-nav'); render(); });
+        });
+        const adminBtn = document.getElementById('adminBtnNav');
+        if(adminBtn) adminBtn.addEventListener('click',()=>{ currentPage='admin'; adminLoggedIn=false; render(); });
+      }
+      if (currentPage === 'pricelist') attachNavEvents();
+      if (currentPage === 'contact') attachNavEvents();
+      if (currentPage === 'booking') attachBookingEvents();
+      if (currentPage === 'mybookings') attachMyBookingsEvents();
+    }
+
+    function attachNavEvents() {
+      document.querySelectorAll('[data-nav]').forEach(el => {
+        el.addEventListener('click', (e) => { currentPage = el.getAttribute('data-nav'); render(); });
+      });
+    }
+
+    // ----------------------------- HOME PAGE (with new gallery, no old demo images) -----------------
+    function renderHomeContent() {
+      const todayBookings = bookings.filter(b => b.date === new Date().toISOString().slice(0,10)).length;
+      // Gallery grid using user's 10 images
+      const galleryHtml = galleryImages.map(url => `
+        <div class="rounded-xl overflow-hidden shadow-md bg-white">
+          <img src="${url}" class="w-full h-48 object-cover gallery-img" alt="Salon Image" loading="lazy">
+        </div>
+      `).join('');
+      
+      return `
+        <div class="space-y-6">
+          <div class="bg-gradient-to-r from-amber-900 to-amber-700 text-white rounded-3xl p-6 shadow-lg">
+            <div class="flex justify-between items-start flex-wrap">
+              <div><i class="fas fa-cut text-4xl"></i><h1 class="text-3xl font-extrabold mt-2">DECENT HAIR SALOON</h1><p class="opacity-90">Premium Grooming since 2015</p></div>
+              <div class="text-right"><i class="fas fa-map-marker-alt"></i><p>Hindaun City, Overbridge ke niche</p><p class="text-sm">⏰ ${settings.openTime} - ${settings.closeTime}</p></div>
+            </div>
+          </div>
+          
+          <!-- NEW GALLERY SECTION - 10 images provided by user, old demo images removed -->
+          <div class="bg-white rounded-2xl p-5 shadow-md">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-images text-amber-700"></i> हमारी गैलरी</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              ${galleryHtml}
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-2xl shadow"><i class="fas fa-clock text-amber-700 text-xl"></i><h2 class="font-bold text-xl">वर्किंग आवर्स</h2><p>खुलने का समय: ${settings.openTime} से ${settings.closeTime}</p><p>लंच ब्रेक: ${settings.breakStart} - ${settings.breakEnd}</p><p class="mt-2"><i class="fas fa-chair"></i> हमारे पास <strong>4 प्रोफेशनल चेयर</strong> हैं | एक स्लॉट में 4 लोग बुक कर सकते हैं।</p></div>
+            <div class="bg-white p-5 rounded-2xl shadow"><i class="fas fa-users"></i><h2 class="font-bold text-xl">हमारे बार्बर</h2><ul class="list-disc pl-5 mt-2">${staffList.slice(0,4).map(s=>`<li>${s.name} (${s.role})</li>`).join('')}<li>+ प्रशिक्षित टीम</li></ul><p class="mt-3 text-green-700"><i class="fas fa-smile-wink"></i> 🚶‍♂️ Walk-in का स्वागत है! ऑनलाइन बुकिंग सुविधा भी उपलब्ध।</p></div>
+          </div>
+          <div class="flex flex-wrap gap-4 justify-center"><button data-nav="booking" class="bg-amber-700 text-white px-6 py-3 rounded-full shadow-lg font-bold"><i class="fas fa-calendar-check"></i> बुक अपॉइंटमेंट</button><button data-nav="pricelist" class="bg-gray-800 text-white px-6 py-3 rounded-full"><i class="fas fa-tag"></i> प्राइस लिस्ट</button><button data-nav="contact" class="bg-gray-800 text-white px-6 py-3 rounded-full"><i class="fas fa-phone-alt"></i> कॉन्टैक्ट</button><button data-nav="mybookings" class="bg-gray-800 text-white px-6 py-3 rounded-full"><i class="fas fa-book"></i> मेरी बुकिंग्स</button><button id="adminBtnNav" class="border border-amber-700 text-amber-800 px-5 py-3 rounded-full"><i class="fas fa-user-shield"></i> एडमिन</button></div>
+          <div class="text-center text-gray-500 text-sm">आज ${todayBookings} बुकिंग्स हो चुकी हैं ✨</div>
+        </div>
+      `;
+    }
+
+    function renderPriceListContent() {
+      return `<div class="bg-white rounded-2xl shadow-xl p-6"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold">💇 सेवाएं और मूल्य</h2><button data-nav="home" class="text-amber-700 underline">← होम</button></div><div class="mt-6 space-y-3">${services.map(s=>`<div class="flex justify-between border-b pb-2"><span class="text-lg"><img src="${s.image}" class="w-8 h-8 inline rounded-full mr-2 object-cover"> ${s.name}</span><span class="font-bold text-amber-800">₹${s.price}</span></div>`).join('')}</div></div>`;
+    }
+
+    function renderBookingContent() {
+      const slotsList = generateTimeSlotsForDate(selectedBookingDate);
+      return `
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+          <h2 class="text-2xl font-bold flex items-center gap-2"><i class="fas fa-chair"></i> बुकिंग (4 चेयर सिस्टम)</h2>
+          <div class="mt-4"><label class="font-semibold">📅 तारीख चुनें:</label><input type="date" id="bookingDate" value="${selectedBookingDate}" min="${new Date().toISOString().slice(0,10)}" class="border p-2 rounded ml-2"></div>
+          <div id="slotContainer" class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6"></div>
+          <div id="bookingForm" class="mt-8 hidden border-t pt-6"><h3 class="font-bold">अपनी जानकारी भरें</h3><input id="custName" placeholder="पूरा नाम" class="border p-2 w-full mt-2 rounded"><input id="custMobile" placeholder="10 अंकों का मोबाइल" class="border p-2 w-full mt-2 rounded"><select id="serviceSelect" class="border p-2 w-full mt-2 rounded">${services.map(s=>`<option value="${s.id}">${s.name} - ₹${s.price}</option>`).join('')}</select><button id="confirmBookingBtn" class="bg-green-700 text-white px-5 py-2 rounded-full mt-3">पुष्टि करें</button><p id="bookingMsg" class="text-sm mt-2"></p></div>
+        </div>
+      `;
+    }
+
+    function attachBookingEvents() {
+      const datePicker = document.getElementById('bookingDate');
+      if(datePicker) datePicker.addEventListener('change', (e) => { selectedBookingDate = e.target.value; render(); });
+      const container = document.getElementById('slotContainer');
+      if(container){
+        const slots = generateTimeSlotsForDate(selectedBookingDate);
+        container.innerHTML = slots.map(slot => {
+          const bgColor = slot.isAvailable ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400';
+          const textColor = slot.isAvailable ? 'text-green-800' : 'text-red-700';
+          return `<div class="slot-card p-3 rounded-xl border-2 cursor-pointer ${bgColor} ${textColor} text-center" data-timeslot="${slot.timeRange}">
+            <div class="font-bold">${slot.timeRange}</div>
+            <div class="text-xs">🚹 ${slot.occupied}/${slot.maxChairs} चेयर बुक</div>
+            ${slot.isAvailable ? `<span class="text-xs">✔️ ${slot.freeChairs} खाली</span>` : '<span class="text-xs">❌ पूर्ण</span>'}
+          </div>`;
+        }).join('');
+        document.querySelectorAll('.slot-card').forEach(card => {
+          card.addEventListener('click',()=>{
+            if(card.classList.contains('bg-red-100')) { alert('यह स्लॉट पूरी तरह बुक है'); return; }
+            const timeSlot = card.getAttribute('data-timeslot');
+            document.getElementById('bookingForm')?.classList.remove('hidden');
+            const confirmBtn = document.getElementById('confirmBookingBtn');
+            confirmBtn?.setAttribute('data-timeslot', timeSlot);
+          });
+        });
+      }
+      const confirmBtn = document.getElementById('confirmBookingBtn');
+      if(confirmBtn){
+        confirmBtn.onclick = () => {
+          const timeSlot = confirmBtn.getAttribute('data-timeslot');
+          const name = document.getElementById('custName').value;
+          const mobile = document.getElementById('custMobile').value;
+          const serviceId = document.getElementById('serviceSelect').value;
+          const res = bookAppointment(selectedBookingDate, timeSlot, name, mobile, serviceId);
+          const msgSpan = document.getElementById('bookingMsg');
+          if(res.success) { msgSpan.innerHTML = `<span class="text-green-600">${res.msg}</span>`; setTimeout(()=>{ render(); },1500); }
+          else msgSpan.innerHTML = `<span class="text-red-600">${res.msg}</span>`;
+        };
+      }
+    }
+
+    function renderMyBookingsContent() {
+      return `<div class="bg-white rounded-2xl p-6"><h2 class="text-xl font-bold">🔍 मेरी बुकिंग्स</h2><input id="searchMobile" placeholder="मोबाइल नंबर (10 अंक)" class="border p-2 rounded w-full my-3"><button id="fetchBookingsBtn" class="bg-amber-700 text-white px-5 py-2 rounded-full">देखें</button><div id="myBookingList" class="mt-6"></div></div>`;
+    }
+
+    function attachMyBookingsEvents() {
+      const fetchBtn = document.getElementById('fetchBookingsBtn');
+      if(fetchBtn) fetchBtn.addEventListener('click',()=>{
+        const mob = document.getElementById('searchMobile').value;
+        if(!/^[0-9]{10}$/.test(mob)) { alert('सही 10 अंकों का मोबाइल डालें'); return; }
+        let userBookings = bookings.filter(b => b.mobile === mob);
+        const listDiv = document.getElementById('myBookingList');
+        if(userBookings.length===0) listDiv.innerHTML = '<div class="bg-gray-100 p-4 rounded">कोई बुकिंग नहीं मिली</div>';
+        else listDiv.innerHTML = userBookings.map(b => `<div class="border p-3 rounded my-2 flex justify-between"><div><strong>${b.customerName}</strong><br/>📅 ${b.date} ⏰ ${b.timeSlot}<br/>💇 ${b.serviceName} - ₹${b.price}</div><button class="text-red-600 cancel-booking" data-id="${b.id}">Cancel</button></div>`).join('');
+        document.querySelectorAll('.cancel-booking').forEach(btn=>{
+          btn.addEventListener('click',(e)=>{
+            const id = Number(btn.getAttribute('data-id'));
+            cancelBooking(id);
+            // Refresh the list
+            const newMob = document.getElementById('searchMobile').value;
+            const updated = bookings.filter(b => b.mobile === newMob);
+            document.getElementById('myBookingList').innerHTML = updated.map(b => `<div class="border p-3 rounded my-2 flex justify-between"><div><strong>${b.customerName}</strong><br/>📅 ${b.date} ⏰ ${b.timeSlot}<br/>💇 ${b.serviceName} - ₹${b.price}</div><button class="text-red-600 cancel-booking" data-id="${b.id}">Cancel</button></div>`).join('');
+            attachMyBookingsEvents(); // reattach events
+          });
+        });
+      });
+    }
+
+    function renderContactContent() {
+      return `<div class="bg-white rounded-2xl p-6"><h2 class="text-2xl font-bold">📞 संपर्क करें</h2><div class="grid gap-4 mt-6 text-lg"><a href="tel:${contacts.phone.replace(/[^0-9+]/g,'')}" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><i class="fas fa-phone-alt text-amber-700"></i> ${contacts.phone}</a><a href="mailto:${contacts.email}" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><i class="fas fa-envelope text-amber-700"></i> ${contacts.email}</a><a href="https://wa.me/${contacts.whatsapp}" target="_blank" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><i class="fab fa-whatsapp text-green-600"></i> व्हाट्सएप चैट</a><a href="https://instagram.com/${contacts.instagram}" target="_blank" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><i class="fab fa-instagram text-pink-600"></i> Instagram</a><a href="https://t.me/${contacts.telegram}" target="_blank" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><i class="fab fa-telegram text-blue-500"></i> Telegram</a></div></div>`;
+    }
+
+    // ----------------------------- ADMIN LOGIN & PANEL (fully functional) -----------------
+    function renderAdminLogin() {
+      appDiv.innerHTML = `
+        <div class="min-h-[70vh] flex items-center justify-center">
+          <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border-t-4 border-amber-600">
+            <div class="text-center mb-6"><i class="fas fa-lock text-4xl text-amber-700"></i><h2 class="text-2xl font-bold mt-2">Admin Access</h2></div>
+            <input type="password" id="adminPass" placeholder="पासवर्ड" class="w-full border rounded-xl p-3 mb-4">
+            <button id="loginBtn" class="w-full bg-amber-800 text-white py-3 rounded-xl font-bold">Login</button>
+            <button id="backHomeAdmin" class="w-full mt-3 text-gray-500 underline">← होमपेज पर जाएं</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('loginBtn')?.addEventListener('click',()=>{
+        if(document.getElementById('adminPass').value === 'admin123') { adminLoggedIn=true; render(); }
+        else alert('गलत पासवर्ड! admin123 डालें');
+      });
+      document.getElementById('backHomeAdmin')?.addEventListener('click',()=>{ currentPage='home'; adminLoggedIn=false; render(); });
+    }
+
+    function renderAdminPanel() {
+      const today = new Date().toISOString().slice(0,10);
+      const todayEarnings = earningsList.filter(e => e.date === today).reduce((sum,cur)=>sum+cur.amount,0);
+      const monthEarnings = earningsList.filter(e => e.date.startsWith(today.slice(0,7))).reduce((sum,cur)=>sum+cur.amount,0);
+      const todayBookingCount = bookings.filter(b => b.date === today).length;
+      const totalPendingSalary = staffList.reduce((sum,st)=>sum+(st.pendingSalary||0),0);
+      appDiv.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-xl p-5">
+          <div class="flex justify-between items-center"><h2 class="text-2xl font-bold">🛡️ एडमिन पैनल</h2><div><button id="adminHomeBtn" class="bg-gray-600 text-white px-3 py-1 rounded-full text-sm mr-2"><i class="fas fa-home"></i> होम</button><button id="logoutAdmin" class="bg-red-600 text-white px-4 py-1 rounded-full text-sm">लॉगआउट</button></div></div>
+          <div class="flex flex-wrap gap-2 my-4 border-b pb-2"><button data-admin-tab="dashboard" class="admin-tab-btn px-4 py-1 rounded-full bg-amber-100">डैशबोर्ड</button><button data-admin-tab="bookings" class="admin-tab-btn px-4 py-1">बुकिंग मैनेज</button><button data-admin-tab="earnings" class="admin-tab-btn px-4 py-1">डेली अर्निंग्स</button><button data-admin-tab="staff" class="admin-tab-btn px-4 py-1">स्टाफ सैलरी</button><button data-admin-tab="prices" class="admin-tab-btn px-4 py-1">प्राइस लिस्ट</button><button data-admin-tab="contactInfo" class="admin-tab-btn px-4 py-1">कॉन्टैक्ट</button><button data-admin-tab="hours" class="admin-tab-btn px-4 py-1">वर्किंग आवर्स</button></div>
+          <div id="adminTabContent">${adminDashboardHTML(todayEarnings, monthEarnings, todayBookingCount, totalPendingSalary)}</div>
+        </div>
+      `;
+      document.getElementById('logoutAdmin')?.addEventListener('click',()=>{ adminLoggedIn=false; currentPage='home'; render(); });
+      document.getElementById('adminHomeBtn')?.addEventListener('click',()=>{ currentPage='home'; adminLoggedIn=false; render(); });
+      document.querySelectorAll('.admin-tab-btn').forEach(btn=>{
+        btn.addEventListener('click',(e)=>{
+          const tab = btn.getAttribute('data-admin-tab');
+          if(tab==='dashboard') document.getElementById('adminTabContent').innerHTML = adminDashboardHTML(todayEarnings, monthEarnings, todayBookingCount, totalPendingSalary);
+          if(tab==='bookings') renderAdminBookingsTab();
+          if(tab==='earnings') renderAdminEarningsTab();
+          if(tab==='staff') renderAdminStaffTab();
+          if(tab==='prices') renderAdminPricesTab();
+          if(tab==='contactInfo') renderAdminContactTab();
+          if(tab==='hours') renderAdminHoursTab();
+        });
+      });
+    }
+
+    function adminDashboardHTML(todayEarn, monthEarn, bookingCount, pendingSum){
+      return `<div class="grid md:grid-cols-2 gap-4"><div class="bg-green-50 p-4 rounded-xl"><i class="fas fa-rupee-sign"></i> आज की कमाई: ₹${todayEarn}</div><div class="bg-blue-50 p-4 rounded-xl">📆 इस महीने: ₹${monthEarn}</div><div class="bg-purple-50 p-4 rounded-xl">📅 आज बुकिंग्स: ${bookingCount}</div><div class="bg-orange-50 p-4 rounded-xl">💰 स्टाफ बकाया: ₹${pendingSum}</div></div>`;
+    }
+    function renderAdminBookingsTab(){
+      let html = `<div><h3 class="font-bold">सभी बुकिंग्स</h3><div class="max-h-96 overflow-auto">${bookings.map(b=>`<div class="border p-2 my-2 flex justify-between"><div>📆${b.date} ${b.timeSlot}<br/>${b.customerName} (${b.mobile}) - ${b.serviceName}</div><button class="bg-red-500 text-white px-2 rounded cancel-booking-admin" data-id="${b.id}">रद्द करें</button></div>`).join('') || '<p>कोई बुकिंग नहीं'}</div><hr class="my-4"><div class="bg-gray-100 p-3 rounded"><label>📌 एडमिन द्वारा स्लॉट व्यस्त/मुक्त करें</label><input type="date" id="occupyDate" value="${new Date().toISOString().slice(0,10)}"><input type="text" id="occupySlot" placeholder="समय स्लॉट (जैसे 10:00 - 10:30)"><button id="occupySlotBtn" class="bg-red-700 text-white px-3 rounded">व्यस्त करें</button><button id="freeSlotBtn" class="bg-green-700 text-white px-3 rounded ml-2">मुक्त करें</button></div></div>`;
+      document.getElementById('adminTabContent').innerHTML = html;
+      document.querySelectorAll('.cancel-booking-admin').forEach(btn=>{ btn.addEventListener('click',()=>{ const id=Number(btn.getAttribute('data-id')); cancelBooking(id); renderAdminBookingsTab(); }); });
+      document.getElementById('occupySlotBtn')?.addEventListener('click',()=>{ const date=document.getElementById('occupyDate').value; const slot=document.getElementById('occupySlot').value; if(date&&slot){ adminOccupySlot(date,slot); renderAdminBookingsTab();} });
+      document.getElementById('freeSlotBtn')?.addEventListener('click',()=>{ const date=document.getElementById('occupyDate').value; const slot=document.getElementById('occupySlot').value; adminFreeSlot(date,slot); renderAdminBookingsTab(); });
+    }
+    function renderAdminEarningsTab(){
+      let html = `<div><h3>दैनिक कमाई जोड़ें</h3><input id="earnDate" type="date" value="${new Date().toISOString().slice(0,10)}"><input id="earnAmount" placeholder="राशि" type="number"><input id="earnDesc" placeholder="विवरण"><button id="addEarningBtn" class="bg-blue-600 text-white px-3 rounded">जोड़ें</button><div class="mt-4">${earningsList.map(e=>`<div class="border-b py-1">${e.date} : ₹${e.amount} (${e.description}) <button class="text-red-500 deleteEarn" data-id="${e.id}">हटाएँ</button></div>`).join('')}</div></div>`;
+      document.getElementById('adminTabContent').innerHTML = html;
+      document.getElementById('addEarningBtn')?.addEventListener('click',()=>{ const date=document.getElementById('earnDate').value; const amount=parseFloat(document.getElementById('earnAmount').value); const desc=document.getElementById('earnDesc').value; if(date && !isNaN(amount)){ earningsList.push({id:Date.now(), date, amount, description:desc}); saveAll(); renderAdminEarningsTab();} });
+      document.querySelectorAll('.deleteEarn').forEach(btn=>{ btn.addEventListener('click',(e)=>{ const id=Number(btn.getAttribute('data-id')); earningsList=earningsList.filter(e=>e.id!==id); saveAll(); renderAdminEarningsTab(); }); });
+    }
+    function renderAdminStaffTab(){
+      let html = `<div><button id="addStaffBtn" class="bg-amber-600 text-white px-3 rounded">+ नया स्टाफ</button><div>${staffList.map(st=>`<div class="border p-3 my-2"><b>${st.name}</b> (${st.role}) | ${st.salaryType} ₹${st.salaryAmount} | बकाया: ₹${st.pendingSalary}<button class="ml-2 bg-green-600 text-white px-2 payStaff" data-id="${st.id}">भुगतान करें</button><button class="ml-2 bg-yellow-600 text-white px-2 bonusStaff" data-id="${st.id}">बोनस/कटौती</button></div>`).join('')}</div></div>`;
+      document.getElementById('adminTabContent').innerHTML = html;
+      document.getElementById('addStaffBtn')?.addEventListener('click',()=>{ let name=prompt('नाम'); let role=prompt('भूमिका'); let type=prompt('salaryType monthly/daily'); let amount=parseFloat(prompt('राशि')); if(name && amount) { staffList.push({id:Date.now(), name, role, salaryType:type, salaryAmount:amount, pendingSalary:0, lastPaid:new Date().toISOString().slice(0,10)}); saveAll(); renderAdminStaffTab();} });
+      document.querySelectorAll('.payStaff').forEach(btn=>{ btn.addEventListener('click',()=>{ const id=btn.getAttribute('data-id'); const staff=staffList.find(s=>s.id==id); if(staff){ staff.pendingSalary=0; staff.lastPaid=new Date().toISOString().slice(0,10); saveAll(); renderAdminStaffTab();} }); });
+      document.querySelectorAll('.bonusStaff').forEach(btn=>{ btn.addEventListener('click',()=>{ const id=btn.getAttribute('data-id'); const staff=staffList.find(s=>s.id==id); let val=prompt('बोनस के लिए + राशि, कटौती के लिए - राशि डालें'); if(val){ let num=parseFloat(val); staff.pendingSalary = (staff.pendingSalary||0) + num; if(staff.pendingSalary<0) staff.pendingSalary=0; saveAll(); renderAdminStaffTab();} }); });
+    }
+    function renderAdminPricesTab(){
+      let html = `<div><button id="newServiceBtn" class="bg-green-600 text-white px-3 rounded">+ नई सेवा</button><div>${services.map(s=>`<div class="flex justify-between border-b py-2"><span><img src="${s.image}" class="w-6 h-6 inline rounded-full mr-2"> ${s.name} ₹${s.price}</span><span><button class="editService text-blue-600" data-id="${s.id}">Edit</button> <button class="delService text-red-600" data-id="${s.id}">Del</button></span></div>`).join('')}</div></div>`;
+      document.getElementById('adminTabContent').innerHTML = html;
+      document.getElementById('newServiceBtn')?.addEventListener('click',()=>{ let n=prompt('सेवा का नाम'); let p=parseFloat(prompt('कीमत')); if(n && p) { services.push({id:'s'+Date.now(), name:n, price:p, image:'https://picsum.photos/id/26/400/300'}); saveAll(); renderAdminPricesTab();} });
+      document.querySelectorAll('.editService').forEach(btn=>{ btn.addEventListener('click',()=>{ let id=btn.getAttribute('data-id'); let svc=services.find(s=>s.id==id); let newName=prompt('नया नाम',svc.name); let newPrice=prompt('नई कीमत',svc.price); if(newName && newPrice){ svc.name=newName; svc.price=parseFloat(newPrice); saveAll(); renderAdminPricesTab();} }); });
+      document.querySelectorAll('.delService').forEach(btn=>{ btn.addEventListener('click',()=>{ let id=btn.getAttribute('data-id'); services=services.filter(s=>s.id!==id); saveAll(); renderAdminPricesTab(); }); });
+    }
+    function renderAdminContactTab(){
+      let html = `<div><label>📞 फोन:</label><input id="editPhone" value="${contacts.phone}" class="border p-1 w-full"><label>✉️ जीमेल:</label><input id="editEmail" value="${contacts.email}" class="border p-1 w-full"><label>💬 व्हाट्सएप (कोड):</label><input id="editWhatsapp" value="${contacts.whatsapp}" class="border p-1 w-full"><label>📸 इंस्टाग्राम:</label><input id="editInsta" value="${contacts.instagram}" class="border p-1 w-full"><label>✈️ टेलीग्राम:</label><input id="editTele" value="${contacts.telegram}" class="border p-1 w-full"><button id="saveContactsBtn" class="bg-amber-700 text-white px-4 py-2 rounded mt-3">सेव करें</button></div>`;
+      document.getElementById('adminTabContent').innerHTML = html;
+      document.getElementById('saveContactsBtn')?.addEventListener('click',()=>{ contacts.phone=document.getElementById('editPhone').value; contacts.email=document.getElementById('editEmail').value; contacts.whatsapp=document.getElementById('editWhatsapp').value; contacts.instagram=document.getElementById('editInsta').value; contacts.telegram=document.getElementById('editTele').value; saveAll(); alert('संपर्क जानकारी अपडेट हुई'); renderAdminContactTab(); });
+    }
+    function renderAdminHoursTab(){
+      let html = `<div><label>खुलने का समय:</label><input id="openTime" value="${settings.openTime}" class="border"><label>बंद होने का समय:</label><input id="closeTime" value="${settings.closeTime}" class="border"><label>स्लॉट अवधि (मिनट):</label><select id="slotDur"><option value="30" ${settings.slotDuration===30?'selected':''}>30 मिनट</option><option value="60" ${settings.slotDuration===60?'selected':''}>1 घंटा</option></select><label>ब्रेक प्रारंभ:</label><input id="breakStart" value="${settings.breakStart}"><label>ब्रेक अंत:</label><input id="breakEnd" value="${settings.breakEnd}"><button id="saveSettingsBtn" class="bg-amber-700 text-white px-4 py-2 rounded mt-3">सेटिंग्स सेव करें</button></div>`;
+      document.getElementById('adminTabContent').innerHTML = html;
+      document.getElementById('saveSettingsBtn')?.addEventListener('click',()=>{ settings.openTime=document.getElementById('openTime').value; settings.closeTime=document.getElementById('closeTime').value; settings.slotDuration=parseInt(document.getElementById('slotDur').value); settings.breakStart=document.getElementById('breakStart').value; settings.breakEnd=document.getElementById('breakEnd').value; saveAll(); alert('वर्किंग आवर्स और स्लॉट अपडेट हुए'); renderAdminHoursTab(); });
+    }
+
+    loadData();
+    render();
+  </script>
+</body>
+</html>
